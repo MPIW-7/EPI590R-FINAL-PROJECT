@@ -6,7 +6,6 @@ Name: "Maria Paula Ibarcena Woll"
 ## Packages and Load Dataset File
 
 ```{r}
-install.packages("gtsummary","here","dplyr","ggplot2","tidyverse")
 library("gtsummary")
 library("here")
 library("dplyr")
@@ -31,13 +30,12 @@ table(cytomegalovirus$diag_type,useNA = "always")
 ## Table 1
 
 ```{r}
+#| label: tbl-one
+#| tbl-cap: "Table One"
 
 ## number of observations in the data set
 #| eval: true
 nrow(cytomegalovirus)
-
-#| label: tbl-one
-#| tbl-cap: Table One
 
 # Create the table 1 and modify it
 summary_table <- tbl_summary(
@@ -60,11 +58,17 @@ summary_table <- tbl_summary(
 
 # Print the summary table
 summary_table
+
+summary_stat <- inline_text(summary_table, variable = "age", column = "stat_1")
 ```
+In @tbl-one we see the mean and IQR`r summary_stat`
+
 
 ## Logit Regression
 
 ```{r}
+#| label: tbl-two
+#| tbl-cap: "Table two"
 
 # Fit the logistic regression model
 logistic_model <- glm(diagnosis.type ~ time.to.transplant + age + sex + race + prior.radiation + prior.transplant + recipient.cmv + donor.cmv + donor.sex,
@@ -88,10 +92,13 @@ logistic_model_table <- tbl_regression(
 logistic_model_table
 
 ```
+In @tbl-two we can see a binary logistic regression, underscoring the relationship between diagnosis type and time to transplant when controlling for additional covariates including age, sex, race, prior radiation, prior transplant, CMV RECIPIENT, CMV donor and CMV Sex. 
 
 ## Boxplot
 
 ```{r}
+#| label: fig-one
+#| fig-cap: "Boxplot of Diagnosis Type and Age"
 # Create a box plot 
 boxplot<-ggplot(cytomegalovirus, aes(x = diag_type, y = age, fill = diag_type)) +
   geom_boxplot() +
@@ -105,6 +112,7 @@ boxplot
 ggsave(here("figures","Dx vs Age.png"),
        plot = boxplot)
 ```
+In @fig-one we see a box plot seeing the distribution of age by the Dx type.
 
 ## Functions
 
@@ -122,39 +130,4 @@ print (mean_age)
   
 # print sd age
 print(sd_age)
-```
-
-## Cross-tab
-
-```{r}
-cytomegalovirus <-cytomegalovirus %>% 
-  filter(!is.na(sex)) %>%
-  mutate(sex_name = case_when(
-    sex == 1 ~ "Male",
-    sex == 0 ~ "Female"))
-#cross tab 1
-cross_tab <- table(cytomegalovirus$diag_type, cytomegalovirus$sex_name)
-
-# Print the cross-tabulation
-print(cross_tab)
-
-#cross tab 2
-cross_tabi <- table(cytomegalovirus$age, cytomegalovirus$sex_name)
-
-print(cross_tabi)
-```
-
-## In-line Text
-
-```{r}
-total_sample <- nrow(cytomegalovirus)
-
-print(total_sample)
-
-stats <- list(n = nrow(cytomegalovirus),
-              mean_age = mean(cytomegalovirus$age))
-print(stats)
-
-
-
 ```
