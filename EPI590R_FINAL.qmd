@@ -1,0 +1,110 @@
+---
+title: "EPI590R_FINAL"
+Name: "Maria Paula Ibarcena Woll"
+---
+
+## Packages and Load Dataset File
+
+```{r}
+install.packages("gtsummary","here","dplyr","ggplot2","tidyverse")
+library("gtsummary")
+library("here")
+library("dplyr")
+library("ggplot2")
+library("tidyverse")
+
+load((here("cytomegv.rda")),verbose=TRUE)
+
+cytomegalovirus <-cytomegalovirus %>% 
+  filter(!is.na(diagnosis.type)) %>%
+  mutate(diag_type = case_when(
+    diagnosis.type == 1 ~ "Myeloid",
+    diagnosis.type == 0 ~ "Lymphoid"))
+
+table(cytomegalovirus$diagnosis.type)
+
+table(cytomegalovirus$diag_type,useNA = "always")
+
+
+```
+
+## Table 1
+
+```{r}
+
+## number of observations in the data set
+#| eval: true
+nrow(cytomegalovirus)
+
+#| label: tbl-one
+#| tbl-cap: Table One
+
+# Create the table 1 and modify it
+summary_table <- tbl_summary(
+  cytomegalovirus,
+  by = diag_type, 
+  missing = "no",
+  include = c(time.to.transplant, age, sex, race, prior.radiation, prior.transplant, recipient.cmv, donor.cmv, donor.sex),
+  label = list(
+    time.to.transplant ~ "Time to Transplant",
+    prior.radiation ~ "Prior Radiation",
+    prior.transplant ~ "Prior Transplant",
+    recipient.cmv ~ "CMV Recipient",
+    donor.cmv ~ "CMV Donor",
+    donor.sex ~ "Donor Sex"
+  ),
+  missing_text = "Missing"
+) %>%
+  # Set the title for the entire table
+  modify_caption(caption = "**Table 1 - Predictors in DX. Type: Myeloid Vs. Lymphoid**") 
+
+# Print the summary table
+summary_table
+```
+
+## Logit Regression
+
+```{r}
+# Load required packages
+library(dplyr)
+library(gtsummary)
+
+# Fit the logistic regression model
+logistic_model <- glm(diagnosis.type ~ time.to.transplant + age + sex + race + prior.radiation + prior.transplant + recipient.cmv + donor.cmv + donor.sex,
+  data = cytomegalovirus, family = binomial())
+
+# Create a summary table of the logistic model
+logistic_model_table <- tbl_regression(
+  logistic_model,
+  exponentiate = TRUE,  # Exponentiates the coefficients to display as odds ratios
+  label = list(
+    time.to.transplant ~ "Time to Transplant",
+    prior.radiation ~ "Prior Radiation",
+    prior.transplant ~ "Prior Transplant",
+    recipient.cmv ~ "CMV Recipient",
+    donor.cmv ~ "CMV Donor",
+    donor.sex ~ "Donor Sex"
+  )
+)
+
+# View the summary table
+logistic_model_table
+
+```
+
+## Plot
+
+```{r}
+# Create a box plot 
+boxplot<-ggplot(cytomegalovirus, aes(x = diag_type, y = age, fill = diag_type)) +
+  geom_boxplot() +
+  labs(title = "Box Plot of Age by Diagnosis Type",
+       x = "Diagnosis Type",
+       y = "Age",
+       fill = "Diagnosis Type") +
+  theme_minimal() +
+  scale_fill_manual(values = c("lightblue", "coral"))
+boxplot
+ggsave(here("figures","Dx vs Age.png"),
+       plot = boxplot)
+```
