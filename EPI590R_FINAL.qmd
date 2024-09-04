@@ -13,7 +13,7 @@ library("dplyr")
 library("ggplot2")
 library("tidyverse")
 
-load((here("cytomegv.rda")),verbose=TRUE)
+load((here("Data","cytomegalovirus.rda")),verbose=TRUE)
 
 cytomegalovirus <-cytomegalovirus %>% 
   filter(!is.na(diagnosis.type)) %>%
@@ -65,9 +65,6 @@ summary_table
 ## Logit Regression
 
 ```{r}
-# Load required packages
-library(dplyr)
-library(gtsummary)
 
 # Fit the logistic regression model
 logistic_model <- glm(diagnosis.type ~ time.to.transplant + age + sex + race + prior.radiation + prior.transplant + recipient.cmv + donor.cmv + donor.sex,
@@ -92,7 +89,7 @@ logistic_model_table
 
 ```
 
-## Plot
+## Boxplot
 
 ```{r}
 # Create a box plot 
@@ -107,4 +104,57 @@ boxplot<-ggplot(cytomegalovirus, aes(x = diag_type, y = age, fill = diag_type)) 
 boxplot
 ggsave(here("figures","Dx vs Age.png"),
        plot = boxplot)
+```
+
+## Functions
+
+```{r}
+(cytomegalovirus$age)
+
+#calculate mean age in data frame
+mean_age <- mean(cytomegalovirus$age, na.rm = TRUE)
+
+# print mean age
+print (mean_age)
+
+#calculate sd age in data frame
+  sd_age <- sd(cytomegalovirus$age, na.rm = TRUE)
+  
+# print sd age
+print(sd_age)
+```
+
+## Cross-tab
+
+```{r}
+cytomegalovirus <-cytomegalovirus %>% 
+  filter(!is.na(sex)) %>%
+  mutate(sex_name = case_when(
+    sex == 1 ~ "Male",
+    sex == 0 ~ "Female"))
+#cross tab 1
+cross_tab <- table(cytomegalovirus$diag_type, cytomegalovirus$sex_name)
+
+# Print the cross-tabulation
+print(cross_tab)
+
+#cross tab 2
+cross_tabi <- table(cytomegalovirus$age, cytomegalovirus$sex_name)
+
+print(cross_tabi)
+```
+
+## In-line Text
+
+```{r}
+total_sample <- nrow(cytomegalovirus)
+
+print(total_sample)
+
+stats <- list(n = nrow(cytomegalovirus),
+              mean_age = mean(cytomegalovirus$age))
+print(stats)
+
+
+
 ```
